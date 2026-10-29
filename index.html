@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Innorts Tristan League</title>
+<style>
+:root {
+  --green: #00d084;
+  --dark: #071b16;
+  --panel: #102820;
+  --gold: #ffd166;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--dark);
+  color: white;
+}
+header {
+  text-align: center;
+  padding: 28px 12px;
+  background: linear-gradient(135deg,#063d2c,#087f5b,#071b16);
+  border-bottom: 3px solid var(--green);
+}
+header h1 { color: var(--gold); font-size: clamp(24px,5vw,40px); }
+header p { color: #d0e8dc; }
+.logo { font-size: 42px; }
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #0b241c;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+button, select, input {
+  padding: 11px;
+  border-radius: 7px;
+  border: 1px solid #44735c;
+  font-size: 14px;
+}
+button {
+  cursor: pointer;
+  background: #183b2e;
+  color: white;
+  font-weight: bold;
+}
+button:hover, button.active {
+  background: var(--green);
+  color: #062017;
+}
+main { max-width: 1100px; margin: auto; padding: 18px 12px; }
+section { display: none; }
+section.active { display: block; }
+h2 { color: var(--gold); }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.card, .panel {
+  background: var(--panel);
+  border: 1px solid #245541;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+.big { font-size: 28px; font-weight: bold; color: var(--green); margin-top: 8px; }
+small, .note { color: #bdd5c7; line-height: 1.6; }
+.table-wrap { overflow-x: auto; border-radius: 10px; }
+table { width: 100%; min-width: 650px; border-collapse: collapse; }
+th { background: #14523b; color: var(--gold); padding: 12px 8px; }
+td { text-align: center; padding: 12px 8px; border-bottom: 1px solid #244638; }
+td:nth-child(2) { text-align: left; font-weight: bold; }
+tr:hover td { background: #183b2e; }
+.pos { color: var(--green); font-weight: bold; }
+input, select { background: #081d16; color: white; max-width: 100%; }
+label { display: block; margin: 12px 0 6px; }
+.fixture {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 4px;
+  border-bottom: 1px solid #244638;
+}
+.home { text-align: right; }
+.away { text-align: left; }
+.score { color: var(--gold); font-weight: bold; white-space: nowrap; }
+.badge { color: var(--green); font-size: 12px; }
+footer { text-align: center; padding: 25px; background: #04120e; color: #a6c4b4; }
+@media(max-width:500px) {
+  nav button { padding: 9px; font-size: 12px; }
+  .fixture { font-size: 13px; gap: 5px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏆</div>
+  <h1>INNORTS TRISTAN LEAGUE</h1>
+  <p>ONE LEAGUE · ONE DREAM · ONE CHAMPION</p>
+  <span class="badge">⚽ OFFICIAL LEAGUE CENTRE</span>
+</header>
+
+<nav>
+  <button class="active" onclick="tab('home',this)">🏠 Home</button>
+  <button onclick="tab('table',this)">📊 Table</button>
+  <button onclick="tab('fixtures',this)">📅 Fixtures</button>
+  <button onclick="tab('results',this)">⚽ Results</button>
+  <button onclick="tab('admin',this)">✍️ Enter Scores</button>
+</nav>
+
+<main>
+<section id="home" class="active">
+  <h2>Welcome to the League</h2>
+  <p class="note">Follow all 12 teams in a full home-and-away season.</p>
+  <div class="cards">
+    <div class="card"><small>🏟️ Teams</small><div class="big">12</div></div>
+    <div class="card"><small>📅 Matchdays</small><div class="big">22</div></div>
+    <div class="card"><small>⚽ Total Matches</small><div class="big">132</div></div>
+    <div class="card"><small>✅ Played</small><div class="big" id="played">0</div></div>
+  </div>
+  <div class="panel">
+    <h2>🥇 League Leaders</h2>
+    <div id="leaders">No matches played yet.</div>
+  </div>
+  <div class="panel">
+    <h2>League Rules</h2>
+    <p>Win = 3 points · Draw = 1 point · Loss = 0 points</p>
+    <p class="note">Each team plays every other team twice: once at home and once away.</p>
+  </div>
+</section>
+
+<section id="table">
+  <h2>📊 Official League Table</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Pos</th><th>Team</th><th>P</th><th>W</th><th>D</th>
+        <th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="fixtures">
+  <h2>📅 League Fixtures</h2>
+  <div class="panel">
+    <label for="round">Choose matchday</label>
+    <select id="round" onchange="showFixtures()"></select>
+  </div>
+  <div class="panel" id="fixtureList"></div>
+</section>
+
+<section id="results">
+  <h2>⚽ Match Results</h2>
+  <div class="panel">
+    <label for="filterRound">Filter results</label>
+    <select id="filterRound" onchange="showResults()">
+      <option value="all">All matchdays</option>
+    </select>
+  </div>
+  <div class="panel" id="resultList">No results recorded.</div>
+</section>
+
+<section id="admin">
+  <h2>✍️ Enter Match Scores</h2>
+  <div class="panel">
+    <p class="note">Select a fixture, enter both scores and save.</p>
+    <label for="adminRound">Matchday</label>
+    <select id="adminRound" onchange="populateMatches()"></select>
+    <label for="matchSelect">Fixture</label>
+    <select id="matchSelect" onchange="loadScore()"></select>
+    <div class="cards">
+      <div class="card">
+        <label id="homeLabel" for="hs">Home score</label>
+        <input id="hs" type="number" min="0" max="99" placeholder="0">
+      </div>
+      <div class="card">
+        <label id="awayLabel" for="as">Away score</label>
+        <input id="as" type="number" min="0" max="99" placeholder="0">
+      </div>
+    </div>
+    <button onclick="saveScore()">💾 Save Result</button>
+    <button onclick="clearScore()">🗑️ Clear Result</button>
+    <p id="message" class="note"></p>
+  </div>
+  <div class="panel">
+    <h2>Important</h2>
+    <p class="note">This version saves scores in the current browser only. It does not provide a secure administrator login or share score updates between visitors. We can add a shared online database in a later step.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <strong>🏆 INNORTS TRISTAN LEAGUE</strong>
+  <p>Football · Competition · Champions</p>
+  <small>Official League Website</small>
+</footer>
+
+<script>
+// Replace these example names with your actual 12 teams.
+const TEAMS = [
+  "Innorts FC", "Tristan United", "Kampala City",
+  "Mbarara Stars", "Western Eagles", "Eastern Lions",
+  "Northern Warriors", "Southern FC", "Royal Strikers",
+  "Greenfield FC", "Victory Athletic", "Champions FC"
+];
+
+const KEY = "innorts_tristan_scores_v1";
+let scores = {};
+try {
+  scores = JSON.parse(localStorage.getItem(KEY) || "{}");
+  if (!scores || typeof scores !== "object" || Array.isArray(scores)) scores = {};
+} catch(e) { scores = {}; }
+
+function makeFixtures() {
+  const original = TEAMS.map((name,id)=>({name,id}));
+  let rotation = [...original];
+  const first = [];
+
+  for (let r=0; r<11; r++) {
+    const games = [];
+    for (let i=0; i<6; i++) {
+      let a=rotation[i], b=rotation[11-i];
+      if ((r+i)%2===0) [a,b]=[b,a];
+      games.push({id:`${r+1}-${i+1}`,round:r+1,home:a.id,away:b.id});
+    }
+    first.push(games);
+    const fixed=rotation[0];
+    const rest=rotation.slice(1);
+    rest.unshift(rest.pop());
+    rotation=[fixed,...rest];
+  }
+
+  const second=first.map((games,i)=>games.map((m,j)=>({
+    id:`${i+12}-${j+1}`,round:i+12,home:m.away,away:m.home
+  })));
+  return [...first,...second].flat();
+}
+
+const fixtures=makeFixtures();
+const el=id=>document.getElementById(id);
+
+function tab(id,btn) {
+  document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));
+  el(id).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+function played(m) {
+  const s=scores[m.id];
+  return s && Number.isInteger(s.home) && Number.isInteger(s.away)
+    && s.home>=0 && s.away>=0;
+}
+
+function tableData() {
+  const t=TEAMS.map((name,id)=>({
+    name,id,P:0,W:0,D:0,L:0,GF:0,GA:0,GD:0,Pts:0
+  }));
+  fixtures.forEach(m=>{
+    if(!played(m)) return;
+    const s=scores[m.id],h=t[m.home],a=t[m.away];
+    h.P++;a.P++;
+    h.GF+=s.home;h.GA+=s.away;
+    a.GF+=s.away;a.GA+=s.home;
+    if(s.home>s.away){h.W++;h.Pts+=3;a.L++;}
+    else if(s.home<s.away){a.W++;a.Pts+=3;h.L++;}
+    else {h.D++;a.D++;h.Pts++;a.Pts++;}
+  });
+  t.forEach(x=>x.GD=x.GF-x.GA);
+  return t.sort((a,b)=>b.Pts-a.Pts||b.GD-a.GD||b.GF-a.GF||a.name.localeCompare(b.name));
+}
+
+function renderTable() {
+  const t=tableData();
+  el("tbody").innerHTML=t.map((x,i)=>`
+    <tr>
+      <td class="pos">${i+1}</td><td>${esc(x.name)}</td>
+      <td>${x.P}</td><td>${x.W}</td><td>${x.D}</td><td>${x.L}</td>
+      <td>${x.GF}</td><td>${x.GA}</td><td>${x.GD}</td><td><b>${x.Pts}</b></td>
+    </tr>`).join("");
+  el("leaders").innerHTML=t.slice(0,3).map((x,i)=>
+    `${["🥇","🥈","🥉"][i]} ${esc(x.name)} — ${x.Pts} points`
+  ).join("<br>");
+  el("played").textContent=fixtures.filter(played).length;
+}
+
+function score(m) {
+  return played(m)?`${scores[m.id].home} - ${scores[m.id].away}`:"VS";
+}
+
+function showFixtures() {
+  const r=Number(el("round").value);
+  const list=fixtures.filter(m=>m.round===r);
+  el("fixtureList").innerHTML=`<h3>Matchday ${r}</h3>`+list.map(m=>`
+    <div class="fixture">
+      <div class="home">${esc(TEAMS[m.home])}</div>
+      <div class="score">${score(m)}</div>
+      <div class="away">${esc(TEAMS[m.away])}</div>
+    </div>`).join("");
+}
+
+function showResults() {
+  const r=el("filterRound").value;
+  const list=fixtures.filter(m=>played(m)&&(r==="all"||m.round===Number(r)));
+  el("resultList").innerHTML=list.length?list.map(m=>`
+    <div class="fixture">
+      <div class="home">${esc(TEAMS[m.home])}</div>
+      <div class="score">${score(m)}<br><small>MD ${m.round}</small></div>
+      <div class="away">${esc(TEAMS[m.away])}</div>
+    </div>`).join(""):"No results recorded for this selection.";
+}
+
+function populateMatches() {
+  const r=Number(el("adminRound").value);
+  el("matchSelect").innerHTML=fixtures.filter(m=>m.round===r).map(m=>
+    `<option value="${m.id}">${esc(TEAMS[m.home])} vs ${esc(TEAMS[m.away])}</option>`
+  ).join("");
+  loadScore();
+}
+
+function loadScore() {
+  const m=fixtures.find(x=>x.id===el("matchSelect").value);
+  if(!m)return;
+  el("homeLabel").textContent=TEAMS[m.home];
+  el("awayLabel").textContent=TEAMS[m.away];
+  el("hs").value=played(m)?scores[m.id].home:"";
+  el("as").value=played(m)?scores[m.id].away:"";
+}
+
+function saveScore() {
+  const id=el("matchSelect").value;
+  const h=el("hs").value,a=el("as").value;
+  if(h.trim()===""||a.trim()==="") {
+    el("message").textContent="Enter both scores first.";return;
+  }
+  const home=Number(h),away=Number(a);
+  if(!Number.isInteger(home)||!Number.isInteger(away)||home<0||away<0||home>99||away>99) {
+    el("message").textContent="Use whole numbers from 0 to 99.";return;
+  }
+  scores[id]={home,away};
+  try {localStorage.setItem(KEY,JSON.stringify(scores));}
+  catch(e){el("message").textContent="Browser storage is unavailable.";return;}
+  refresh();
+  el("message").textContent="✅ Result saved in this browser.";
+}
+
+function clearScore() {
+  const id=el("matchSelect").value;
+  delete scores[id];
+  try {localStorage.setItem(KEY,JSON.stringify(scores));}
+  catch(e){el("message").textContent="Could not update browser storage.";return;}
+  refresh();
+  el("message").textContent="Result cleared.";
+  loadScore();
+}
+
+function refresh() {
+  renderTable();
+  showFixtures();
+  showResults();
+}
+
+function init() {
+  for(let r=1;r<=22;r++) {
+    el("round").add(new Option("Matchday "+r,r));
+    el("adminRound").add(new Option("Matchday "+r,r));
+    el("filterRound").add(new Option("Matchday "+r,r));
+  }
+  refresh();
+  populateMatches();
+}
+
+init();
+</script>
+</body>
+</html>
